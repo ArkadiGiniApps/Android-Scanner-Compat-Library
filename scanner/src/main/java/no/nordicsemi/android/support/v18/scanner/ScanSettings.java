@@ -51,30 +51,18 @@ public final class ScanSettings implements Parcelable {
 	/**
 	 * A special Bluetooth LE scan mode. Applications using this scan mode will passively listen for
 	 * other scan results without starting BLE scans themselves.
-	 * <p>
-	 * On Android Lollipop {@link #SCAN_MODE_LOW_POWER} will be used instead, as opportunistic
-	 * mode was not yet supported.
-	 * <p>
-	 * On pre-Lollipop devices it is possible to override the default intervals
-	 * using {@link Builder#setPowerSave(long, long)}.
 	 */
 	public static final int SCAN_MODE_OPPORTUNISTIC = -1;
 
 	/**
 	 * Perform Bluetooth LE scan in low power mode. This is the default scan mode as it consumes the
 	 * least power. This mode is enforced if the scanning application is not in foreground.
-	 * <p>
-	 * On pre-Lollipop devices this mode will be emulated by scanning for 0.5 second followed
-	 * by 4.5 second of idle, which corresponds to the low power intervals on Lollipop or newer.
 	 */
 	public static final int SCAN_MODE_LOW_POWER = 0;
 
 	/**
 	 * Perform Bluetooth LE scan in balanced power mode. Scan results are returned at a rate that
 	 * provides a good trade-off between scan frequency and power consumption.
-	 * <p>
-	 * On pre-Lollipop devices this mode will be emulated by scanning for 2 second followed
-	 * by 3 seconds of idle, which corresponds to the low power intervals on Lollipop or newer.
 	 */
 	public static final int SCAN_MODE_BALANCED = 1;
 
@@ -142,14 +130,6 @@ public final class ScanSettings implements Parcelable {
 	 * the 1Mbit PHY only.
 	 */
 	public static final int PHY_LE_ALL_SUPPORTED = 255;
-
-	/**
-	 * Pre-Lollipop scanning requires a wakelock and the CPU cannot go to sleep.
-	 * To conserve power we can optionally scan for a certain duration (scan interval)
-	 * and then rest for a time before starting scanning again.
-	 */
-	private final long powerSaveScanInterval;
-	private final long powerSaveRestInterval;
 
 	// Bluetooth LE scan mode.
 	private int scanMode;
@@ -253,8 +233,7 @@ public final class ScanSettings implements Parcelable {
 						 final int numOfMatchesPerFilter, final boolean legacy, final int phy,
 						 final boolean hardwareFiltering, final boolean hardwareBatching,
 						 final boolean hardwareCallbackTypes, final long matchTimeout,
-						 final long taskInterval,
-						 final long powerSaveScanInterval, final long powerSaveRestInterval) {
+						 final long taskInterval) {
 		this.scanMode = scanMode;
 		this.callbackType = callbackType;
 		this.reportDelayMillis = reportDelayMillis;
@@ -267,8 +246,6 @@ public final class ScanSettings implements Parcelable {
 		this.useHardwareCallbackTypesIfSupported = hardwareCallbackTypes;
 		this.matchLostDeviceTimeout = matchTimeout * 1000000L; // convert to nanos
 		this.matchLostTaskInterval = taskInterval;
-		this.powerSaveScanInterval = powerSaveScanInterval;
-		this.powerSaveRestInterval = powerSaveRestInterval;
 	}
 
 	private ScanSettings(final Parcel in) {
@@ -281,8 +258,6 @@ public final class ScanSettings implements Parcelable {
 		phy = in.readInt();
 		useHardwareFilteringIfSupported = in.readInt() == 1;
 		useHardwareBatchingIfSupported = in.readInt() == 1;
-		powerSaveScanInterval = in.readLong();
-		powerSaveRestInterval = in.readLong();
 	}
 
 	@Override
@@ -296,8 +271,6 @@ public final class ScanSettings implements Parcelable {
 		dest.writeInt(phy);
 		dest.writeInt(useHardwareFilteringIfSupported ? 1 : 0);
 		dest.writeInt(useHardwareBatchingIfSupported ? 1 : 0);
-		dest.writeLong(powerSaveScanInterval);
-		dest.writeLong(powerSaveRestInterval);
 	}
 
 	@Override
@@ -318,21 +291,6 @@ public final class ScanSettings implements Parcelable {
 	};
 
 	/**
-	 * Determine if we should do power-saving sleep on pre-Lollipop
-	 */
-	public boolean hasPowerSaveMode() {
-		return powerSaveRestInterval > 0 && powerSaveScanInterval > 0;
-	}
-
-	public long getPowerSaveRest() {
-		return powerSaveRestInterval;
-	}
-
-	public long getPowerSaveScan() {
-		return powerSaveScanInterval;
-	}
-
-	/**
 	 * Builder for {@link ScanSettings}.
 	 */
 	@SuppressWarnings({"UnusedReturnValue", "unused"})
@@ -349,19 +307,11 @@ public final class ScanSettings implements Parcelable {
 		private boolean useHardwareCallbackTypesIfSupported = true;
 		private long matchLostDeviceTimeout = MATCH_LOST_DEVICE_TIMEOUT_DEFAULT;
 		private long matchLostTaskInterval = MATCH_LOST_TASK_INTERVAL_DEFAULT;
-		private long powerSaveRestInterval = 0;
-		private long powerSaveScanInterval = 0;
 
 		/**
 		 * Set scan mode for Bluetooth LE scan.
 		 * <p>
 		 * {@link #SCAN_MODE_OPPORTUNISTIC} is supported on Android Marshmallow onwards.
-		 * On Lollipop this mode will fall back {@link #SCAN_MODE_LOW_POWER}, which actually means
-		 * that the library will start its own scan instead of relying on scans from other apps.
-		 * This may have significant impact on battery usage.
-		 * <p>
-		 * On pre-Lollipop devices, the settings set by {@link #setPowerSave(long, long)}
-		 * will be used. By default, the intervals are the same as for {@link #SCAN_MODE_LOW_POWER}.
 		 *
 		 * @param scanMode The scan mode can be one of {@link ScanSettings#SCAN_MODE_LOW_POWER},
 		 *                 {@link #SCAN_MODE_BALANCED},
@@ -573,70 +523,14 @@ public final class ScanSettings implements Parcelable {
 		}
 
 		/**
-		 * Pre-Lollipop scanning requires a wakelock and the CPU cannot go to sleep.
-		 * To conserve power we can optionally scan for a certain duration (scan interval)
-		 * and then rest for a time before starting scanning again. Won't affect Lollipop
-		 * or later devices.
-		 *
-		 * @param scanInterval interval in ms to scan at a time.
-		 * @param restInterval interval to sleep for without scanning before scanning again for
-		 *                     scanInterval.
-		 */
-		@NonNull
-		public Builder setPowerSave(final long scanInterval, final long restInterval) {
-			if (scanInterval <= 0 || restInterval <= 0) {
-				throw new IllegalArgumentException("scanInterval and restInterval must be > 0");
-			}
-			powerSaveScanInterval = scanInterval;
-			powerSaveRestInterval = restInterval;
-			return this;
-		}
-
-		/**
 		 * Build {@link ScanSettings}.
 		 */
 		@NonNull
 		public ScanSettings build() {
-			if (powerSaveRestInterval == 0 && powerSaveScanInterval == 0)
-				updatePowerSaveSettings();
-
 			return new ScanSettings(scanMode, callbackType, reportDelayMillis, matchMode,
 					numOfMatchesPerFilter, legacy, phy, useHardwareFilteringIfSupported,
 					useHardwareBatchingIfSupported, useHardwareCallbackTypesIfSupported,
-					matchLostDeviceTimeout, matchLostTaskInterval,
-					powerSaveScanInterval, powerSaveRestInterval);
-		}
-
-		/**
-		 * Sets power save settings based on the scan mode selected.
-		 */
-		private void updatePowerSaveSettings() {
-			switch (scanMode) {
-				case SCAN_MODE_LOW_LATENCY:
-					// Disable power save mode
-					powerSaveScanInterval = 0;
-					powerSaveRestInterval = 0;
-					break;
-				case SCAN_MODE_BALANCED:
-					// Scan for 2 seconds every 5 seconds
-					powerSaveScanInterval = 2000;
-					powerSaveRestInterval = 3000;
-					break;
-				case SCAN_MODE_OPPORTUNISTIC:
-					// It is not possible to emulate OPPORTUNISTIC scanning, but in theory
-					// that should be even less battery consuming than LOW_POWER.
-					// For pre-Lollipop devices intervals can be overwritten by
-					// setPowerSave(long, long) if needed.
-
-					// On Android Lollipop the native SCAN_MODE_LOW_POWER will be used instead
-					// of power save values.
-				case SCAN_MODE_LOW_POWER:
-				default:
-					// Scan for 0.5 second every 5 seconds
-					powerSaveScanInterval = 500;
-					powerSaveRestInterval = 4500;
-					break;
-			}
+					matchLostDeviceTimeout, matchLostTaskInterval);
 		}
 	}
 }

@@ -35,9 +35,9 @@ public class ScannerService extends Service {
     private static final String TAG = "ScannerService";
 
     /* package */ static final String EXTRA_PENDING_INTENT = "no.nordicsemi.android.support.v18.EXTRA_PENDING_INTENT";
-    /* package */ static final String EXTRA_FILTERS = "no.nordicsemi.android.support.v18.EXTRA_FILTERS";
-    /* package */ static final String EXTRA_SETTINGS = "no.nordicsemi.android.support.v18.EXTRA_SETTINGS";
-    /* package */ static final String EXTRA_START = "no.nordicsemi.android.support.v18.EXTRA_START";
+    /* package */ static final String EXTRA_FILTERS        = "no.nordicsemi.android.support.v18.EXTRA_FILTERS";
+    /* package */ static final String EXTRA_SETTINGS       = "no.nordicsemi.android.support.v18.EXTRA_SETTINGS";
+    /* package */ static final String EXTRA_START          = "no.nordicsemi.android.support.v18.EXTRA_START";
 
     @NonNull private final Object LOCK = new Object();
 
@@ -160,7 +160,8 @@ public class ScannerService extends Service {
             Log.w(TAG, "Stopping scanning failed", e);
         }
 
-        if (shouldStop)
+        if (shouldStop) {
             stopSelf();
+        }
     }
 }
