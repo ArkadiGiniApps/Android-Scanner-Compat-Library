@@ -121,13 +121,6 @@ public abstract class BluetoothLeScannerCompat {
 	@SuppressWarnings("WeakerAccess")
 	@RequiresPermission(allOf = {Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH})
 	public final void startScan(@NonNull final ScanCallback callback) {
-//		//noinspection ConstantConditions
-//		if (callback == null) {
-//			throw new IllegalArgumentException("callback is null");
-//		}
-//		final Handler handler = new Handler(Looper.getMainLooper());
-//		startScanInternal(Collections.<ScanFilter>emptyList(), new ScanSettings.Builder().build(),
-//				callback, handler);
 		this.startScan(null, null, callback);
 
 	}
@@ -150,14 +143,6 @@ public abstract class BluetoothLeScannerCompat {
 	public final void startScan(@Nullable final List<ScanFilter> filters,
 								@Nullable final ScanSettings settings,
 								@NonNull  final ScanCallback callback) {
-//		//noinspection ConstantConditions
-//		if (callback == null) {
-//			throw new IllegalArgumentException("callback is null");
-//		}
-//		final Handler handler = new Handler(Looper.getMainLooper());
-//		startScanInternal(filters != null ? filters : Collections.<ScanFilter>emptyList(),
-//				settings != null ? settings : new ScanSettings.Builder().build(),
-//				callback, handler);
 		this.startScan(filters,settings,callback,null);
 	}
 
@@ -185,9 +170,11 @@ public abstract class BluetoothLeScannerCompat {
 		if (callback == null) {
 			throw new IllegalArgumentException("callback is null");
 		}
+
 		startScanInternal(filters != null ? filters : Collections.<ScanFilter>emptyList(),
 				settings != null ? settings : new ScanSettings.Builder().build(),
-				callback, handler != null ? handler : new Handler(Looper.getMainLooper()));
+				callback,
+				handler != null ? handler : new Handler(Looper.getMainLooper()));
 	}
 
 	/**
@@ -205,6 +192,7 @@ public abstract class BluetoothLeScannerCompat {
 		}
 		stopScanInternal(callback);
 	}
+
 	// TODO: allow this to be used on Main Thread only, as the android implementation of BluetoothLeScanner.BleScanCallbackWrapper uses: Handler handler = new Handler(Looper.getMainLooper());
 	/**
 	 * Starts Bluetooth LE scan. Its implementation depends on the Android version.

@@ -57,10 +57,12 @@ class BluetoothLeScannerImplMarshmallow extends BluetoothLeScannerCompat {
                                              @NonNull final ScanSettings settings,
                                              @NonNull final ScanCallback callback,
                                              @NonNull final Handler handler) {
-        final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+        final BluetoothAdapter   adapter = BluetoothAdapter.getDefaultAdapter();
         final BluetoothLeScanner scanner = adapter.getBluetoothLeScanner();
-        if (scanner == null)
+        if (scanner == null) {
             throw new IllegalStateException("BT le scanner not available");
+        }
 
         final boolean offloadedBatchingSupported  = adapter.isOffloadedScanBatchingSupported();
         final boolean offloadedFilteringSupported = adapter.isOffloadedFilteringSupported();
@@ -68,18 +70,28 @@ class BluetoothLeScannerImplMarshmallow extends BluetoothLeScannerCompat {
         ScanCallbackWrapperMarshmallow wrapper;
 
         synchronized (wrappers) {
+
             if (wrappers.containsKey(callback)) {
                 throw new IllegalArgumentException("scanner already started with given callback");
             }
-            wrapper = new ScanCallbackWrapperMarshmallow(offloadedBatchingSupported,
-                    offloadedFilteringSupported, filters, settings, callback, handler);
+            wrapper = new ScanCallbackWrapperMarshmallow(
+                    offloadedBatchingSupported,
+                    offloadedFilteringSupported,
+                    filters,
+                    settings,
+                    callback,
+                    handler);
+
             wrappers.put(callback, wrapper);
         }
 
         final android.bluetooth.le.ScanSettings nativeScanSettings = toNativeScanSettings(adapter, settings, false);
+
         List<android.bluetooth.le.ScanFilter> nativeScanFilters = null;
-        if (!filters.isEmpty() && offloadedFilteringSupported && settings.getUseHardwareFilteringIfSupported())
+
+        if (!filters.isEmpty() && offloadedFilteringSupported && settings.getUseHardwareFilteringIfSupported()) {
             nativeScanFilters = toNativeScanFilters(filters);
+        }
 
         scanner.startScan(nativeScanFilters, nativeScanSettings, wrapper.nativeCallback);
     }
@@ -163,31 +175,24 @@ class BluetoothLeScannerImplMarshmallow extends BluetoothLeScannerCompat {
     }
 
     @NonNull
-    /* package */ android.bluetooth.le.ScanSettings toNativeScanSettings(@NonNull final BluetoothAdapter adapter,
-                                                                         @NonNull final ScanSettings settings,
-                                                                         final boolean exactCopy) {
-        final android.bluetooth.le.ScanSettings.Builder builder =
-                new android.bluetooth.le.ScanSettings.Builder();
+        /* package */ android.bluetooth.le.ScanSettings toNativeScanSettings(@NonNull final BluetoothAdapter adapter, @NonNull final ScanSettings settings, final boolean exactCopy) {
 
-        if (exactCopy || adapter.isOffloadedScanBatchingSupported() && settings.getUseHardwareBatchingIfSupported())
+        final android.bluetooth.le.ScanSettings.Builder builder = new android.bluetooth.le.ScanSettings.Builder();
+
+        if (exactCopy || adapter.isOffloadedScanBatchingSupported() && settings.getUseHardwareBatchingIfSupported()) {
             builder.setReportDelay(settings.getReportDelayMillis());
+        }
 
-        if (exactCopy || settings.getUseHardwareCallbackTypesIfSupported())
-            builder.setCallbackType(settings.getCallbackType())
+        if (exactCopy || settings.getUseHardwareCallbackTypesIfSupported()) {
+            builder
+                    .setCallbackType(settings.getCallbackType())
                     .setMatchMode(settings.getMatchMode())
                     .setNumOfMatches(settings.getNumOfMatches());
+        }
 
         builder.setScanMode(settings.getScanMode());
 
         return builder.build();
-    }
-
-    @NonNull
-        /* package */ ArrayList<android.bluetooth.le.ScanFilter> toNativeScanFilters(@NonNull final List<ScanFilter> filters) {
-        final ArrayList<android.bluetooth.le.ScanFilter> nativeScanFilters = new ArrayList<>();
-        for (final ScanFilter filter : filters)
-            nativeScanFilters.add(toNativeScanFilter(filter));
-        return nativeScanFilters;
     }
 
     @NonNull
@@ -202,6 +207,14 @@ class BluetoothLeScannerImplMarshmallow extends BluetoothLeScannerCompat {
             builder.setServiceData(filter.getServiceDataUuid(), filter.getServiceData(), filter.getServiceDataMask());
 
         return builder.build();
+    }
+
+    @NonNull
+        /* package */ ArrayList<android.bluetooth.le.ScanFilter> toNativeScanFilters(@NonNull final List<ScanFilter> filters) {
+        final ArrayList<android.bluetooth.le.ScanFilter> nativeScanFilters = new ArrayList<>();
+        for (final ScanFilter filter : filters)
+            nativeScanFilters.add(toNativeScanFilter(filter));
+        return nativeScanFilters;
     }
 
     @NonNull
@@ -224,18 +237,9 @@ class BluetoothLeScannerImplMarshmallow extends BluetoothLeScannerCompat {
 
     /* package */ static class ScanCallbackWrapperMarshmallow extends ScanCallbackWrapper {
 
-        private ScanCallbackWrapperMarshmallow(final boolean offloadedBatchingSupported,
-											   final boolean offloadedFilteringSupported,
-											   @NonNull final List<ScanFilter> filters,
-											   @NonNull final ScanSettings settings,
-											   @NonNull final ScanCallback callback,
-											   @NonNull final Handler handler) {
-            super(offloadedBatchingSupported, offloadedFilteringSupported,
-                    filters, settings, callback, handler);
-        }
-
         @NonNull
         private final android.bluetooth.le.ScanCallback nativeCallback = new android.bluetooth.le.ScanCallback() {
+
             private long lastBatchTimestamp;
 
             @Override
@@ -310,5 +314,15 @@ class BluetoothLeScannerImplMarshmallow extends BluetoothLeScannerCompat {
                 });
             }
         };
+
+        private ScanCallbackWrapperMarshmallow(final boolean offloadedBatchingSupported,
+                                               final boolean offloadedFilteringSupported,
+                                               @NonNull final List<ScanFilter> filters,
+                                               @NonNull final ScanSettings settings,
+                                               @NonNull final ScanCallback callback,
+                                               @NonNull final Handler handler) {
+            super(offloadedBatchingSupported, offloadedFilteringSupported,
+                    filters, settings, callback, handler);
+        }
     }
 }

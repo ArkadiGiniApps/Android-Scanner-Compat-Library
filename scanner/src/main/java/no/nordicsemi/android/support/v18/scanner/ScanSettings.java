@@ -295,18 +295,19 @@ public final class ScanSettings implements Parcelable {
 	 */
 	@SuppressWarnings({"UnusedReturnValue", "unused"})
 	public static final class Builder {
-		private int scanMode = SCAN_MODE_LOW_POWER;
-		private int callbackType = CALLBACK_TYPE_ALL_MATCHES;
-		private long reportDelayMillis = 0;
-		private int matchMode = MATCH_MODE_AGGRESSIVE;
-		private int numOfMatchesPerFilter = MATCH_NUM_MAX_ADVERTISEMENT;
-		private boolean legacy = true;
-		private int phy = PHY_LE_ALL_SUPPORTED;
-		private boolean useHardwareFilteringIfSupported = true;
-		private boolean useHardwareBatchingIfSupported = true;
+
+		private int 	scanMode 							= SCAN_MODE_LOW_POWER;
+		private int 	callbackType 						= CALLBACK_TYPE_ALL_MATCHES;
+		private long 	reportDelayMillis 					= 0;
+		private int 	matchMode 							= MATCH_MODE_AGGRESSIVE;
+		private int 	numOfMatchesPerFilter 				= MATCH_NUM_MAX_ADVERTISEMENT;
+		private boolean legacy 								= true;
+		private int 	phy 								= PHY_LE_ALL_SUPPORTED;
+		private boolean useHardwareFilteringIfSupported 	= true;
+		private boolean useHardwareBatchingIfSupported 		= true;
 		private boolean useHardwareCallbackTypesIfSupported = true;
-		private long matchLostDeviceTimeout = MATCH_LOST_DEVICE_TIMEOUT_DEFAULT;
-		private long matchLostTaskInterval = MATCH_LOST_TASK_INTERVAL_DEFAULT;
+		private long 	matchLostDeviceTimeout 				= MATCH_LOST_DEVICE_TIMEOUT_DEFAULT;
+		private long 	matchLostTaskInterval 				= MATCH_LOST_TASK_INTERVAL_DEFAULT;
 
 		/**
 		 * Set scan mode for Bluetooth LE scan.

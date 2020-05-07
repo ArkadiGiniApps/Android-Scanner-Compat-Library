@@ -88,10 +88,13 @@ import androidx.annotation.RequiresPermission;
 										 @Nullable final ScanSettings settings,
 										 @NonNull  final Context context,
 										 @NonNull  final PendingIntent callbackIntent) {
-		final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+		final BluetoothAdapter   adapter = BluetoothAdapter.getDefaultAdapter();
 		final BluetoothLeScanner scanner = adapter.getBluetoothLeScanner();
-		if (scanner == null)
+
+		if (scanner == null) {
 			throw new IllegalStateException("BT le scanner not available");
+		}
 
 		final ScanSettings nonNullSettings = settings != null ? settings : new ScanSettings.Builder().build();
 		final List<ScanFilter> nonNullFilters = filters != null ? filters : Collections.<ScanFilter>emptyList();
@@ -197,18 +200,21 @@ import androidx.annotation.RequiresPermission;
 	/* package */ android.bluetooth.le.ScanSettings toNativeScanSettings(@NonNull final BluetoothAdapter adapter,
 																		 @NonNull final ScanSettings settings,
 																		 final boolean exactCopy) {
-		final android.bluetooth.le.ScanSettings.Builder builder =
-				new android.bluetooth.le.ScanSettings.Builder();
+		final android.bluetooth.le.ScanSettings.Builder builder = new android.bluetooth.le.ScanSettings.Builder();
 
-		if (exactCopy || adapter.isOffloadedScanBatchingSupported() && settings.getUseHardwareBatchingIfSupported())
+		if (exactCopy || adapter.isOffloadedScanBatchingSupported() && settings.getUseHardwareBatchingIfSupported()) {
 			builder.setReportDelay(settings.getReportDelayMillis());
+		}
 
-		if (exactCopy || settings.getUseHardwareCallbackTypesIfSupported())
-			builder.setCallbackType(settings.getCallbackType())
+		if (exactCopy || settings.getUseHardwareCallbackTypesIfSupported()) {
+			builder
+					.setCallbackType(settings.getCallbackType())
 					.setMatchMode(settings.getMatchMode())
 					.setNumOfMatches(settings.getNumOfMatches());
+		}
 
-		builder.setScanMode(settings.getScanMode())
+		builder
+				.setScanMode(settings.getScanMode())
 				.setLegacy(settings.getLegacy())
 				.setPhy(settings.getPhy());
 
@@ -251,6 +257,7 @@ import androidx.annotation.RequiresPermission;
 	@SuppressWarnings("WeakerAccess")
 	@NonNull
 	/* package */ ScanFilter fromNativeScanFilter(@NonNull final android.bluetooth.le.ScanFilter filter) {
+
 		final ScanFilter.Builder builder = new ScanFilter.Builder();
 		builder.setDeviceAddress(filter.getDeviceAddress())
 				.setDeviceName(filter.getDeviceName())
@@ -281,6 +288,7 @@ import androidx.annotation.RequiresPermission;
 	}
 
 	/* package */ static class PendingIntentExecutorWrapper extends ScanCallbackWrapper {
+
 		/* package */ @NonNull final PendingIntentExecutor executor;
 
 		PendingIntentExecutorWrapper(final boolean offloadedBatchingSupported,

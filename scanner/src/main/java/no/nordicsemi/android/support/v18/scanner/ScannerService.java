@@ -32,6 +32,7 @@ import androidx.annotation.RequiresPermission;
  * {@link ScanSettings#SCAN_MODE_LOW_POWER} mode and set filter to lower power consumption.
  */
 public class ScannerService extends Service {
+
     private static final String TAG = "ScannerService";
 
     /* package */ static final String EXTRA_PENDING_INTENT = "no.nordicsemi.android.support.v18.EXTRA_PENDING_INTENT";
@@ -88,7 +89,7 @@ public class ScannerService extends Service {
 
     @Nullable
     @Override
-    public IBinder onBind(final Intent intent) {
+        public IBinder onBind(final Intent intent) {
         // Forbid binding
         return null;
     }
