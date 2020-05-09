@@ -252,12 +252,15 @@ public final class ScanSettings implements Parcelable {
 		scanMode = in.readInt();
 		callbackType = in.readInt();
 		reportDelayMillis = in.readLong();
+
 		matchMode = in.readInt();
 		numOfMatchesPerFilter = in.readInt();
+
 		legacy = in.readInt() != 0;
 		phy = in.readInt();
+
 		useHardwareFilteringIfSupported = in.readInt() == 1;
-		useHardwareBatchingIfSupported = in.readInt() == 1;
+		useHardwareBatchingIfSupported  = in.readInt() == 1;
 	}
 
 	@Override
@@ -270,7 +273,7 @@ public final class ScanSettings implements Parcelable {
 		dest.writeInt(legacy ? 1 : 0);
 		dest.writeInt(phy);
 		dest.writeInt(useHardwareFilteringIfSupported ? 1 : 0);
-		dest.writeInt(useHardwareBatchingIfSupported ? 1 : 0);
+		dest.writeInt(useHardwareBatchingIfSupported  ? 1 : 0);
 	}
 
 	@Override

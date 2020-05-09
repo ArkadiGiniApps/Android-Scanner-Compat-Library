@@ -103,14 +103,17 @@ public final class ScanFilter implements Parcelable {
 
 	@Override
 	public void writeToParcel(final Parcel dest, final int flags) {
+
 		dest.writeInt(deviceName == null ? 0 : 1);
 		if (deviceName != null) {
 			dest.writeString(deviceName);
 		}
+
 		dest.writeInt(deviceAddress == null ? 0 : 1);
 		if (deviceAddress != null) {
 			dest.writeString(deviceAddress);
 		}
+
 		dest.writeInt(serviceUuid == null ? 0 : 1);
 		if (serviceUuid != null) {
 			dest.writeParcelable(serviceUuid, flags);
@@ -119,6 +122,7 @@ public final class ScanFilter implements Parcelable {
 				dest.writeParcelable(serviceUuidMask, flags);
 			}
 		}
+
 		dest.writeInt(serviceDataUuid == null ? 0 : 1);
 		if (serviceDataUuid != null) {
 			dest.writeParcelable(serviceDataUuid, flags);
@@ -134,7 +138,9 @@ public final class ScanFilter implements Parcelable {
 				}
 			}
 		}
+
 		dest.writeInt(manufacturerId);
+
 		dest.writeInt(manufacturerData == null ? 0 : 1);
 		if (manufacturerData != null) {
 			dest.writeInt(manufacturerData.length);
