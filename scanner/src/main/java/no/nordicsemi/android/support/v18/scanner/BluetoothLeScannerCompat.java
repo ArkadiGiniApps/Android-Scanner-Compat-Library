@@ -359,7 +359,6 @@ public abstract class BluetoothLeScannerCompat {
 			@Override
 			public void run() {
 				final long now = SystemClock.elapsedRealtimeNanos();
-
 				synchronized (LOCK) {
 					final Iterator<ScanResult> iterator = devicesInRange.values().iterator();
 					while (iterator.hasNext()) {

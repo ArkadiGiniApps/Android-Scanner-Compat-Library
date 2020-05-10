@@ -170,9 +170,13 @@ public final class ScanRecord {
 
     private ScanRecord(@Nullable final List<ParcelUuid> serviceUuids,
                        @Nullable final SparseArray<byte[]> manufacturerData,
-                       @Nullable final Map<ParcelUuid, byte[]> serviceData,
-                       final int advertiseFlags, final int txPowerLevel,
-                       final String localName, final byte[] bytes) {
+                       @Nullable final Map<ParcelUuid,
+                               byte[]> serviceData,
+                       final int advertiseFlags,
+                       final int txPowerLevel,
+                       final String localName,
+                       final byte[] bytes)
+    {
         this.serviceUuids = serviceUuids;
         this.manufacturerSpecificData = manufacturerData;
         this.serviceData = serviceData;
@@ -194,11 +198,12 @@ public final class ScanRecord {
      */
     @Nullable
     /* package */ static ScanRecord parseFromBytes(@Nullable final byte[] scanRecord) {
+
         if (scanRecord == null) {
             return null;
         }
 
-        int currentPos = 0;
+        int position = 0;
         int advertiseFlag = -1;
         int txPowerLevel = Integer.MIN_VALUE;
         String localName = null;
@@ -207,49 +212,56 @@ public final class ScanRecord {
         Map<ParcelUuid, byte[]> serviceData = null;
 
         try {
-            while (currentPos < scanRecord.length) {
+            while (position < scanRecord.length) {
                 // length is unsigned int.
-                final int length = scanRecord[currentPos++] & 0xFF;
+                final int length = scanRecord[position++] & 0xFF;
                 if (length == 0) {
                     break;
                 }
                 // Note the length includes the length of the field type itself.
                 final int dataLength = length - 1;
                 // fieldType is unsigned int.
-                final int fieldType = scanRecord[currentPos++] & 0xFF;
+                final int fieldType = scanRecord[position++] & 0xFF;
+
                 switch (fieldType) {
                     case DATA_TYPE_FLAGS:
-                        advertiseFlag = scanRecord[currentPos] & 0xFF;
+                        advertiseFlag = scanRecord[position] & 0xFF;
                         break;
+
                     case DATA_TYPE_SERVICE_UUIDS_16_BIT_PARTIAL:
                     case DATA_TYPE_SERVICE_UUIDS_16_BIT_COMPLETE:
-                        if (serviceUuids == null)
+                        if (serviceUuids == null) {
                             serviceUuids = new ArrayList<>();
-                        parseServiceUuid(scanRecord, currentPos,
-                                dataLength, BluetoothUuid.UUID_BYTES_16_BIT, serviceUuids);
+                        }
+                        parseServiceUuid(scanRecord, position, dataLength, BluetoothUuid.UUID_BYTES_16_BIT, serviceUuids);
                         break;
+
                     case DATA_TYPE_SERVICE_UUIDS_32_BIT_PARTIAL:
                     case DATA_TYPE_SERVICE_UUIDS_32_BIT_COMPLETE:
-                        if (serviceUuids == null)
+                        if (serviceUuids == null) {
                             serviceUuids = new ArrayList<>();
-                        parseServiceUuid(scanRecord, currentPos, dataLength,
-                                BluetoothUuid.UUID_BYTES_32_BIT, serviceUuids);
+                        }
+                        parseServiceUuid(scanRecord, position, dataLength, BluetoothUuid.UUID_BYTES_32_BIT, serviceUuids);
                         break;
+
                     case DATA_TYPE_SERVICE_UUIDS_128_BIT_PARTIAL:
                     case DATA_TYPE_SERVICE_UUIDS_128_BIT_COMPLETE:
-                        if (serviceUuids == null)
+                        if (serviceUuids == null) {
                             serviceUuids = new ArrayList<>();
-                        parseServiceUuid(scanRecord, currentPos, dataLength,
-                                BluetoothUuid.UUID_BYTES_128_BIT, serviceUuids);
+                        }
+                        parseServiceUuid(scanRecord, position, dataLength, BluetoothUuid.UUID_BYTES_128_BIT, serviceUuids);
                         break;
+
                     case DATA_TYPE_LOCAL_NAME_SHORT:
                     case DATA_TYPE_LOCAL_NAME_COMPLETE:
-                        localName = new String(
-                                extractBytes(scanRecord, currentPos, dataLength));
+                        byte[] data = extractBytes(scanRecord, position, dataLength);
+                        localName = new String(data);
                         break;
+
                     case DATA_TYPE_TX_POWER_LEVEL:
-                        txPowerLevel = scanRecord[currentPos];
+                        txPowerLevel = scanRecord[position];
                         break;
+
                     case DATA_TYPE_SERVICE_DATA_16_BIT:
                     case DATA_TYPE_SERVICE_DATA_32_BIT:
                     case DATA_TYPE_SERVICE_DATA_128_BIT:
@@ -260,42 +272,39 @@ public final class ScanRecord {
                             serviceUuidLength = BluetoothUuid.UUID_BYTES_128_BIT;
                         }
 
-                        final byte[] serviceDataUuidBytes = extractBytes(scanRecord, currentPos,
-                                serviceUuidLength);
-                        final ParcelUuid serviceDataUuid = BluetoothUuid.parseUuidFrom(
-                                serviceDataUuidBytes);
-                        final byte[] serviceDataArray = extractBytes(scanRecord,
-                                currentPos + serviceUuidLength, dataLength - serviceUuidLength);
-                        if (serviceData == null)
+                        final byte[] serviceDataUuidBytes = extractBytes(scanRecord, position, serviceUuidLength);
+                        final ParcelUuid serviceDataUuid = BluetoothUuid.parseUuidFrom(serviceDataUuidBytes);
+
+                        final byte[] serviceDataArray = extractBytes(scanRecord, position + serviceUuidLength, dataLength - serviceUuidLength);
+                        if (serviceData == null) {
                             serviceData = new HashMap<>();
+                        }
                         serviceData.put(serviceDataUuid, serviceDataArray);
                         break;
+
                     case DATA_TYPE_MANUFACTURER_SPECIFIC_DATA:
                         // The first two bytes of the manufacturer specific data are
                         // manufacturer ids in little endian.
-                        final int manufacturerId = ((scanRecord[currentPos + 1] & 0xFF) << 8) +
-                                (scanRecord[currentPos] & 0xFF);
-                        final byte[] manufacturerDataBytes = extractBytes(scanRecord, currentPos + 2,
-                                dataLength - 2);
-                        if (manufacturerData == null)
+                        final int manufacturerId = ((scanRecord[position + 1] & 0xFF) << 8) + (scanRecord[position] & 0xFF);
+                        final byte[] manufacturerDataBytes = extractBytes(scanRecord, position + 2, dataLength - 2);
+                        if (manufacturerData == null) {
                             manufacturerData = new SparseArray<>();
+                        }
                         manufacturerData.put(manufacturerId, manufacturerDataBytes);
                         break;
+
                     default:
                         // Just ignore, we don't handle such data type.
                         break;
                 }
-                currentPos += dataLength;
+                position += dataLength;
             }
-
-            return new ScanRecord(serviceUuids, manufacturerData, serviceData,
-                    advertiseFlag, txPowerLevel, localName, scanRecord);
+            return new ScanRecord(serviceUuids, manufacturerData, serviceData, advertiseFlag, txPowerLevel, localName, scanRecord);
         } catch (final Exception e) {
             Log.e(TAG, "unable to parse scan record: " + Arrays.toString(scanRecord));
             // As the record is invalid, ignore all the parsed results for this packet
             // and return an empty record with raw scanRecord bytes in results
-            return new ScanRecord(null, null, null,
-                    -1, Integer.MIN_VALUE, null, scanRecord);
+            return new ScanRecord(null, null, null, -1, Integer.MIN_VALUE, null, scanRecord);
         }
     }
 
@@ -326,8 +335,7 @@ public final class ScanRecord {
                                         final int uuidLength,
                                         @NonNull final List<ParcelUuid> serviceUuids) {
         while (dataLength > 0) {
-            final byte[] uuidBytes = extractBytes(scanRecord, currentPos,
-                    uuidLength);
+            final byte[] uuidBytes = extractBytes(scanRecord, currentPos,uuidLength);
             serviceUuids.add(BluetoothUuid.parseUuidFrom(uuidBytes));
             dataLength -= uuidLength;
             currentPos += uuidLength;

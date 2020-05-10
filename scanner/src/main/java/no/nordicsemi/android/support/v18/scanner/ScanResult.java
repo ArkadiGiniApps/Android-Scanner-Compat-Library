@@ -109,18 +109,34 @@ public final class ScanResult implements Parcelable {
 	 * @param timestampNanos Timestamp at which the scan result was observed.
 	 * @deprecated use {@link #ScanResult(BluetoothDevice, int, int, int, int, int, int, int, ScanRecord, long)}
 	 */
-	public ScanResult(@NonNull final BluetoothDevice device, @Nullable final ScanRecord scanRecord,
-					  int rssi, long timestampNanos) {
-		this.device = device;
-		this.scanRecord = scanRecord;
-		this.rssi = rssi;
-		this.timestampNanos = timestampNanos;
-		this.eventType = (DATA_COMPLETE << 5) | ET_LEGACY_MASK | ET_CONNECTABLE_MASK;
-		this.primaryPhy = 1; // BluetoothDevice.PHY_LE_1M;
-		this.secondaryPhy = PHY_UNUSED;
-		this.advertisingSid = SID_NOT_PRESENT;
-		this.txPower = 127;
-		this.periodicAdvertisingInterval = 0;
+	public ScanResult(
+			@NonNull final BluetoothDevice device,
+			int rssi,
+			@Nullable final ScanRecord scanRecord,
+			long timestampNanos)
+	{
+		// this.device 					 	= device;
+		// this.eventType 					= (DATA_COMPLETE << 5) | ET_LEGACY_MASK | ET_CONNECTABLE_MASK;
+		// this.primaryPhy 				 	= 1; // BluetoothDevice.PHY_LE_1M;
+		// this.secondaryPhy 				= PHY_UNUSED;
+		// this.advertisingSid 			 	= SID_NOT_PRESENT;
+		// this.txPower 					= 127;
+		// this.rssi 						= rssi;
+		// this.periodicAdvertisingInterval = 0;
+		// this.scanRecord 				 	= scanRecord;
+		// this.timestampNanos 			 	= timestampNanos;
+		this(
+				device,
+				(DATA_COMPLETE << 5) | ET_LEGACY_MASK | ET_CONNECTABLE_MASK,
+				1 /* BluetoothDevice.PHY_LE_1M; */,
+				PHY_UNUSED,
+				SID_NOT_PRESENT,
+				127,
+				rssi,
+				0,
+				scanRecord,
+				timestampNanos
+		);
 	}
 
 	/**
@@ -137,21 +153,28 @@ public final class ScanResult implements Parcelable {
 	 * @param scanRecord Scan record including both advertising data and scan response data.
 	 * @param timestampNanos Timestamp at which the scan result was observed.
 	 */
-	public ScanResult(@NonNull final BluetoothDevice device, final int eventType,
-					  final int primaryPhy, final int secondaryPhy,
-					  final int advertisingSid, final int txPower, final int rssi,
-					  final int periodicAdvertisingInterval,
-					  @Nullable final ScanRecord scanRecord, final long timestampNanos) {
-		this.device = device;
-		this.eventType = eventType;
-		this.primaryPhy = primaryPhy;
-		this.secondaryPhy = secondaryPhy;
-		this.advertisingSid = advertisingSid;
-		this.txPower = txPower;
-		this.rssi = rssi;
+	public ScanResult(
+			@NonNull final BluetoothDevice device,
+			final int eventType,
+			final int primaryPhy,
+			final int secondaryPhy,
+			final int advertisingSid,
+			final int txPower,
+			final int rssi,
+			final int periodicAdvertisingInterval,
+			@Nullable final ScanRecord scanRecord,
+			final long timestampNanos)
+	{
+		this.device 					 = device;
+		this.eventType 					 = eventType;
+		this.primaryPhy 				 = primaryPhy;
+		this.secondaryPhy 				 = secondaryPhy;
+		this.advertisingSid 			 = advertisingSid;
+		this.txPower 					 = txPower;
+		this.rssi 						 = rssi;
 		this.periodicAdvertisingInterval = periodicAdvertisingInterval;
-		this.scanRecord = scanRecord;
-		this.timestampNanos = timestampNanos;
+		this.scanRecord 				 = scanRecord;
+		this.timestampNanos 			 = timestampNanos;
 	}
 
 	private ScanResult(final Parcel in) {

@@ -221,8 +221,7 @@ class BluetoothLeScannerImplMarshmallow extends BluetoothLeScannerCompat {
         /* package */ ScanResult fromNativeScanResult(@NonNull final android.bluetooth.le.ScanResult nativeScanResult) {
         final byte[] data = nativeScanResult.getScanRecord() != null ?
                 nativeScanResult.getScanRecord().getBytes() : null;
-        return new ScanResult(nativeScanResult.getDevice(), ScanRecord.parseFromBytes(data),
-                nativeScanResult.getRssi(), nativeScanResult.getTimestampNanos());
+        return new ScanResult(nativeScanResult.getDevice(), nativeScanResult.getRssi(), ScanRecord.parseFromBytes(data), nativeScanResult.getTimestampNanos());
     }
 
     @NonNull
